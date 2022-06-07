@@ -14,6 +14,8 @@ WORKDIR /src
 COPY ./go.mod ./go.sum ./
 # Download and install dependencies
 RUN go mod download
+# Dependencies for swagger
+RUN go get -u github.com/swaggo/http-swagger
 
 COPY ./ ./
 # Disable the C++ compiler
@@ -21,6 +23,7 @@ RUN CGO_ENABLED=0 go build \
     -installsuffix 'static' \
     # Select the name
     -o /go-bootcamp
+
 
 # This image will run the app
 FROM scratch as runner
@@ -31,7 +34,10 @@ COPY ./config/.env ./config/
 
 COPY /files/characters.csv ./files/characters.csv
 
+COPY ./docs/ ./docs/
+
 COPY --from=builder /go-bootcamp /go-bootcamp
+
 
 EXPOSE 5050
 # Call the server
